@@ -530,13 +530,754 @@ menu_keymap() {
 }
 
 set_keymap() {
-    local KEYMAP=$(get_option KEYMAP)
+    local KEYMAP=$(get_option KEYMAP) X11MAP
 
     if [ -f /etc/vconsole.conf ]; then
         sed -i -e "s|KEYMAP=.*|KEYMAP=$KEYMAP|g" $TARGETDIR/etc/vconsole.conf
     else
         sed -i -e "s|#\?KEYMAP=.*|KEYMAP=$KEYMAP|g" $TARGETDIR/etc/rc.conf
     fi
+
+    # Return, if X11 is not installed
+    [ ! -d $TARGETDIR/etc/X11/xinit/xinitrc.d ] && return 0
+
+    # Map the KEYMAP selection to X11MAP to be used with setxkbmap
+    case "$KEYMAP" in
+    ANSI-dvorak)
+	# N/A ?
+	X11MAP="us dvorak"
+	;;
+    azerty)
+	# French (??)
+	X11MAP="fr"
+	;;
+    bashkir)
+	# Bashkirian
+	X11MAP="ru bak"
+	;;
+    be-latin1)
+	# Belgian (Latin1)
+	X11MAP="be"
+	;;
+    bg-cp1251)
+	# Bulgarian (CP 1251)
+	X11MAP="bg"
+	;;
+    bg-cp855)
+	# Bulgarian (CP 855)
+	X11MAP="bg"
+	;;
+    bg_bds-cp1251)
+	# Bulgarian (CP 1251)
+	X11MAP="bg"
+	;;
+    bg_bds-utf8)
+	# Bulgarian (UTF-8)
+	X11MAP="bg"
+	;;
+    bg_pho-cp1251)
+	# Bulgarian phonetic (CP 1251)
+	X11MAP="bg phonetic"
+	;;
+    bg_pho-utf8)
+	# Bulgarian new phonetic (UTF-8)
+	X11MAP="bg bas_phonetic"
+	;;
+    br-abnt)
+	# Portuguese (Brazil, ABNT)
+	X11MAP="br"
+	;;
+    br-abnt2)
+	# Portuguese (Brazil, ABNT2)
+	X11MAP="br"
+	;;
+    br-latin1-abnt2)
+	# Portuguese (Brazil, Latin1, ABNT2)
+	X11MAP="br"
+	;;
+    br-latin1-us)
+	# Portuguese (Brazil, Nativo for US keyboards)
+	X11MAP="br nativo-us"
+	;;
+    by)
+	# Belarusian
+	X11MAP="by"
+	;;
+    by-cp1251)
+	# Belarusian (CP 1251)
+	X11MAP="by"
+	;;
+    bywin-cp1251)
+	# Belarusian (Windows keys, CP 1251)
+	X11MAP="by"
+	;;
+    cf)
+	# French (Canadian)
+	X11MAP="ca fr-legacy"
+	;;
+    colemak)
+	# English (Colemak)
+	X11MAP="us colemak"
+	;;
+    croat)
+	# Croatian
+	X11MAP="hr"
+	;;
+    cz)
+	# Czech
+	X11MAP="cz"
+	;;
+    cz-cp1250)
+	# Czech (CP 1250)
+	X11MAP="cz"
+	;;
+    cz-lat2)
+	# Czech (Latin2)
+	X11MAP="cz qwerty"
+	;;
+    cz-lat2-prog)
+	# Czech (Latin2, Programmer)
+	X11MAP="cz qwerty_bksl"
+	;;
+    cz-qwertz)
+	# Czech (QWERTZ)
+	X11MAP="cz"
+	;;
+    cz-us-qwertz)
+	# Czech (US, QWERTZ)
+	X11MAP="cz ucw"
+	;;
+    de)
+	# German
+	X11MAP="de"
+	;;
+    de-latin1)
+	# German (latin1)
+	X11MAP="de"
+	;;
+    de-latin1-nodeadkeys)
+	# German (Latin1, no dead keys)
+	X11MAP="de nodeadkeys"
+	;;
+    de-mobii)
+	# German
+	X11MAP="de"
+	;;
+    de_CH-latin1)
+	# Swiss (German)
+	X11MAP="ch de_nodeadkeys"
+	;;
+    de_alt_UTF-8)
+	# German
+	X11MAP="de"
+	;;
+    defkeymap)
+	# Default (en-US)
+	X11MAP="us"
+	;;
+    defkeymap_V1.0)
+	# Default (en-US) v1.0
+	X11MAP="us"
+	;;
+    dk)
+	# Danish
+	X11MAP="dk"
+	;;
+    dk-latin1)
+	# Danish (Latin1)
+	X11MAP="dk"
+	;;
+    dvorak)
+	# Default Dvorak
+	X11MAP="us dvoark"
+	;;
+    dvorak-ca-fr)
+	# French (Canada) Dvorak
+	X11MAP="ca fr-dvorak"
+	;;
+    dvorak-es)
+	# Spanish Dvorak
+	X11MAP="es dvorak"
+	;;
+    dvorak-fr)
+	# French Dvorak
+	X11MAP="fr dvorak"
+	;;
+    dvorak-l)
+	# English (US, Dvorak, left hand)
+	X11MAP="us dvorak-l"
+	;;
+    dvorak-la)
+	# Spanish (Latin American, Dvorak)
+	X11MAP="latam dvorak"
+	;;
+    dvorak-programmer)
+	# ??
+	X11MAP="us dvorak"
+	;;
+    dvorak-r)
+	# English (US, Dvorak, right hand)
+	X11MAP="us dvorak-r"
+	;;
+    dvorak-ru)
+	# Russian Dvorak
+	X11MAP="ru dvorak"
+	;;
+    dvorak-sv-a1)
+	# Swedish (Dvorak, A1 layout)
+	X11MAP="sv dvorak"
+	;;
+    dvorak-sv-a5)
+	# Swedish (Dvorak, A5 layout)
+	X11MAP="sv dvorak"
+	;;
+    dvorak-uk)
+	# English (UK)
+	X11MAP="gb dvorak"
+	;;
+    emacs)
+	# English (US, Emacs)
+	X11MAP="us"
+	;;
+    emacs2)
+	# English (US, Emacs, Latin1)
+	X11MAP="us"
+	;;
+    es)
+	# Spanish
+	X11MAP="es"
+	;;
+    es-cp850)
+	# Spanish (CP 850)
+	X11MAP="es"
+	;;
+    es-olpc)
+	# Spanish (OLPC)
+	X11MAP="us olpc2"
+	;;
+    et)
+	# Amharic
+	X11MAP="et"
+	;;
+    et-nodeadkeys)
+	# Amharic (No dead keys)
+	X11MAP="et nodeadkeys"
+	;;
+    fi)
+	# Finnish
+	X11MAP="fi"
+	;;
+    fr)
+	# French
+	X11MAP="fr"
+	;;
+    fr-bepo)
+	# French (Bepo)
+	X11MAP="fr bepo"
+	;;
+    fr-bepo-latin9)
+	# French (Bepo, latin9)
+	X11MAP="fr bepo_latin9"
+	;;
+    fr-latin0)
+	# French (Latin0)
+	X11MAP="fr"
+	;;
+    fr-latin1)
+	# French (Latin1)
+	X11MAP="fr"
+	;;
+    fr-latin9)
+	# French (Latin9)
+	X11MAP="fr latin9"
+	;;
+    fr-old)
+	# French (old)
+	X11MAP="fr"
+	;;
+    fr-pc)
+	# French (PC)
+	X11MAP="fr nodeadkeys"
+	;;
+    fr_CH)
+	# Swiss (French)
+	X11MAP="ch fr"
+	;;
+    fr_CH-latin1)
+	# Swiss (French, Latin1)
+	X11MAP="ch fr"
+	;;
+    gr)
+	# Greek
+	X11MAP="gr"
+	;;
+    gr-pc)
+	# Greek (PC?)
+	X11MAP="gr nodeadkeys"
+	;;
+    hu)
+	# Hungarian
+	X11MAP="hu"
+	;;
+    hu101)
+	# Hungarian (101/qwertz/comma/dead keys)
+	X11MAP="hu 101_qwertz_comma_dead"
+	;;
+    il)
+	# Hebrew
+	X11MAP="il"
+	;;
+    il-heb)
+	# Hebrew (lyx)
+	X11MAP="il lyx"
+	;;
+    il-phonetic)
+	# Hebrew (phonetic)
+	X11MAP="il phonetic"
+	;;
+    is-latin1)
+	# Icelandic (Latin1)
+	X11MAP="is"
+	;;
+    is-latin1-us)
+	# Icelandic (Latin1, US)
+	X11MAP="is"
+	;;
+    it)
+	# Italian
+	X11MAP="it"
+	;;
+    it-ibm)
+	# Italian (IBM 142)
+	X11MAP="it ibm"
+	;;
+    it2)
+	# Italian
+	X11MAP="it"
+	;;
+    jp106)
+	# Japanese (106 keys?)
+	X11MAP="jp"
+	;;
+    kazakh)
+	# Kazakh
+	X11MAP="kz"
+	;;
+    ky_alt_sh-UTF-8)
+	# Kyrgyz (alt, UTF-8)
+	X11MAP="kg"
+	;;
+    kyrgyz)
+	# Kyrgyz
+	X11MAP="kg"
+	;;
+    la-latin1)
+	# Spanish (Latin America, Latin1)
+	X11MAP="latam"
+	;;
+    lt)
+	# Lithuanian
+	X11MAP="lt"
+	;;
+    lt.baltic)
+	# Lithuanian (Baltic)
+	X11MAP="lt"
+	;;
+    lt.l4)
+	# Lithuanian (L4)
+	X11MAP="lt"
+	;;
+    lv)
+	# Latvian
+	X11MAP="lv"
+	;;
+    lv-tilde)
+	# Latvian (Tilde)
+	X11MAP="lv tilde"
+	;;
+    mac-be)
+	# Belgian (Mac)
+	X11MAP="be mac"
+	;;
+    mac-de-latin1)
+	# German (Mac)
+	X11MAP="de mac"
+	;;
+    mac-de-latin1-nodeadkeys)
+	# German (Mac, no dead keys)
+	X11MAP="de mac_nodeadkeys"
+	;;
+    mac-de_CH)
+	# Swiss (Mac, German)
+	X11MAP="ch de_mac"
+	;;
+    mac-dk-latin1)
+	# Danish (Mac)
+	X11MAP="dk mac"
+	;;
+    mac-es)
+	# Spanish (Mac)
+	X11MAP="es mac"
+	;;
+    mac-fi-latin1)
+	# Finnish (Mac)
+	X11MAP="fi mac"
+	;;
+    mac-fr)
+	# French (Mac)
+	X11MAP="fr mac"
+	;;
+    mac-fr_CH-latin1)
+	# Swiss (French, Mac)
+	X11MAP="ch fr_mac"
+	;;
+    mac-it)
+	# Italian (Mac)
+	X11MAP="it mac"
+	;;
+    mac-pl)
+	# Polish (Mac)
+	X11MAP="pl mac"
+	;;
+    mac-pt-latin1)
+	# Portuguese (Mac, Latin1)
+	X11MAP="pt"
+	;;
+    mac-se)
+	# Swedish (Mac)
+	X11MAP="se"
+	;;
+    mac-uk)
+	# English (UK, Mac)
+	X11MAP="gb mac"
+	;;
+    mac-us)
+	# English (US, Mac)
+	X11MAP="us mac"
+	;;
+    mk)
+	# Macedonian
+	X11MAP="mk"
+	;;
+    mk-cp1251)
+	# Macedonian (CP 1251)
+	X11MAP="mk"
+	;;
+    mk-utf)
+	# Macedonian (UTF-8)
+	X11MAP="mk"
+	;;
+    mk0)
+	# Macedonian (Variant 0)
+	X11MAP="mk"
+	;;
+    nl)
+	# Dutch (Variant 1)
+	X11MAP="nl"
+	;;
+    nl2)
+	# Dutch (Variant 2)
+	X11MAP="nl"
+	;;
+    no)
+	# Norwegian
+	X11MAP="no"
+	;;
+    no-dvorak)
+	# Norwegian (Dvorak)
+	X11MAP="no dvorak"
+	;;
+    no-latin1)
+	# Norwegian (Latin1)
+	X11MAP="no"
+	;;
+    pl)
+	# Polish
+	X11MAP="pl"
+	;;
+    pl1)
+	# Polish (Variant 1)
+	X11MAP="pl"
+	;;
+    pl2)
+	# Polish (Variant 2)
+	X11MAP="pl"
+	;;
+    pl3)
+	# Polish (Variant 3)
+	X11MAP="pl"
+	;;
+    pl4)
+	# Polish (Variant 4)
+	X11MAP="pl"
+	;;
+    pt)
+	# Portuguese
+	X11MAP="pt"
+	;;
+    pt-latin1)
+	# Portuguese (Latin1)
+	X11MAP="pt"
+	;;
+    pt-latin9)
+	# Portuguese (Latin9)
+	X11MAP="pt"
+	;;
+    pt-olpc)
+	# Portuguese (OLPC)
+	X11MAP="pt"
+	;;
+    ro)
+	# Romanian
+	X11MAP="ro"
+	;;
+    ro_std)
+	# Romanian (Standard)
+	X11MAP="ro std"
+	;;
+    ro_win)
+	# Romanian (Windows keys)
+	X11MAP="ro winkeys"
+	;;
+    ru)
+	# Russian
+	X11MAP="ru"
+	;;
+    ru-cp1251)
+	# Russian (CP 1251)
+	X11MAP="ru"
+	;;
+    ru-ms)
+	# Russian (MS)
+	X11MAP="ru"
+	;;
+    ru-yawerty)
+	# Russian (YAWERTY)
+	X11MAP="ru"
+	;;
+    ru1)
+	# Russian (Variant 1)
+	X11MAP="ru"
+	;;
+    ru2)
+	# Russian (Variant 2)
+	X11MAP="ru"
+	;;
+    ru3)
+	# Russian (Variant 3)
+	X11MAP="ru"
+	;;
+    ru4)
+	# Russian (Variant 3)
+	X11MAP="ru"
+	;;
+    ru_win)
+	# Russian (Phonetic, Windows keys)
+	X11MAP="ru phonetic_winkeys"
+	;;
+    ruwin_alt-CP1251)
+	# Russian (Alt, CP 1251)
+	X11MAP="ru"
+	;;
+    ruwin_alt-KOI8-R)
+	# Russian (Alt, KOI8-R)
+	X11MAP="ru"
+	;;
+    ruwin_alt-UTF-8)
+	# Russian (Alt, UTF-8)
+	X11MAP="ru"
+	;;
+    ruwin_alt_sh-UTF-8)
+	# Russian (Alt, Shift UTF-8)
+	X11MAP="ru"
+	;;
+    ruwin_cplk-CP1251)
+	# Russian (Capslock, CP 1251)
+	X11MAP="ru"
+	;;
+    ruwin_cplk-KOI8-R)
+	# Russian (Capslock, KOI8-R)
+	X11MAP="ru"
+	;;
+    ruwin_cplk-UTF-8)
+	# Russian (Capslock, UTF-8)
+	X11MAP="ru"
+	;;
+    ruwin_ct_sh-CP1251)
+	# Russian (Ctrl+Shift, CP 1251)
+	X11MAP="ru"
+	;;
+    ruwin_ct_sh-KOI8-R)
+	# Russian (Ctrl+Shift, KOI8-R)
+	X11MAP="ru"
+	;;
+    ruwin_ct_sh-UTF-8)
+	# Russian (Ctrl+Shift, UTF-8)
+	X11MAP="ru"
+	;;
+    ruwin_ctrl-CP1251)
+	# Russian (Ctrl, CP 1251)
+	X11MAP="ru"
+	;;
+    ruwin_ctrl-KOI8-R)
+	# Russian (Ctrl, KOI8-R)
+	X11MAP="ru"
+	;;
+    ruwin_ctrl-UTF-8)
+	# Russian (Ctrl, UTF-8)
+	X11MAP="ru"
+	;;
+    se-fi-ir209)
+	# N/A
+	X11MAP="se"
+	;;
+    se-fi-lat6)
+	# N/A
+	X11MAP="se"
+	;;
+    se-ir209)
+	# Finnish / Swedish (IR209)
+	X11MAP="se"
+	;;
+    se-lat6)
+	# Finnish / Swedish (Latin6)
+	X11MAP="se"
+	;;
+    se-latin1)
+	# Finnish / Swedish (Latin1)
+	X11MAP="se"
+	;;
+    sg)
+	# ??
+	# X11MAP=""
+	;;
+    sg-latin1)
+	# ??
+	# X11MAP="??"
+	;;
+    sg-latin1-lk450)
+	# ??
+	# X11MAP="??"
+	;;
+    sk-prog-qwerty)
+	# Slovak (Programmer, QWERTY)
+	X11MAP="sk qwerty"
+	;;
+    sk-prog-qwertz)
+	# Slovak (Programmer, QWERTZ)
+	X11MAP="sk"
+	;;
+    sk-qwerty)
+	# Slovak (QWERTY)
+	X11MAP="sk qwerty_bksl"
+	;;
+    sk-qwertz)
+	# Slovak (QWERTZ)
+	X11MAP="sk"
+	;;
+    slovene)
+	# Slovenian
+	X11MAP="si"
+	;;
+    sr-cy)
+	# Serbian (Cyrillic)
+	X11MAP="rs"
+	;;
+    sv-latin1)
+	# Swedish / Finnish (Latin1)
+	X11MAP="se"
+	;;
+    tj_alt-UTF8)
+	# Tajik (Alt, UTF-8)
+	X11MAP="tj"
+	;;
+    tr_f-latin5)
+	# Turkish (F-Keyboard, Latin5)
+	X11MAP="tr f"
+	;;
+    tr_q-latin5)
+	# Turkish (Q-Keyboard, Latin5)
+	X11MAP="tr"
+	;;
+    tralt)
+	# Turkish (Alt + AltGr)
+	X11MAP="tr"
+	;;
+    trf)
+	# Turkish (F-Keyboard, 105 keys)
+	X11MAP="tr f"
+	;;
+    trf-fgGIod)
+	# Turkish (ISO-8859-9)
+	X11MAP="tr"
+	;;
+    trq)
+	# Turkish (Q-Keyboard, 105 keys)
+	X11MAP="tr"
+	;;
+    ttwin_alt-UTF-8)
+	# Tatarian (Alt, UTF-8)
+	X11MAP="ru tt"
+	;;
+    ttwin_cplk-UTF-8)
+	# Tatarian (Capslock, UTF-8)
+	X11MAP="ru tt"
+	;;
+    ttwin_ct_sh-UTF-8)
+	# Tatarian (Ctrl+Shift, UTF-8)
+	X11MAP="ru tt"
+	;;
+    ttwin_ctrl-UTF-8)
+	# Tatarian (Ctrl, UTF-8)
+	X11MAP="ru tt"
+	;;
+    ua)
+	# Ukrainian
+	X11MAP="ua"
+	;;
+    ua-cp1251)
+	# Ukrainian (CP 1251)
+	X11MAP="ua"
+	;;
+    ua-utf)
+	# Ukrainian (UTF-8)
+	X11MAP="ua"
+	;;
+    ua-utf-ws)
+	# Ukrainian (UTF-8, Windows keys)
+	X11MAP="ua winkeys"
+	;;
+    ua-ws)
+	# Ukrainian (Windows keys)
+	X11MAP="ua winkeys"
+	;;
+    uk)
+	# English (UK)
+	X11MAP="gb"
+	;;
+    us)
+	# English (US)
+	X11MAP="us"
+	;;
+    us-acentos)
+	# English (US, International)
+	X11MAP="us intl"
+	;;
+    wangbe)
+	# Belgian (Wang keyboard)
+	X11MAP="be"
+	;;
+    wangbe2)
+	# Belgian (Wang keyboard 2)
+	X11MAP="be"
+	;;
+    esac
+
+    # Return, if no mapping was defined
+    [ -z "$X11MAP" ] && return 0
+
+    echo "setxkbmap $X11MAP" > $TARGETDIR/etc/X11/xinit/xinitrc.d/20-keymap
+    chmod 0755 $TARGETDIR/etc/X11/xinit/xinitrc.d/20-keymap
 }
 
 menu_locale() {
@@ -1297,17 +2038,15 @@ ${BOLD}Do you want to continue?${RESET}" 20 80 || return
     fi
 
     if [ -f $TARGETDIR/etc/sudoers ]; then
-        USERLOGIN="$(get_option USERLOGIN)"
-        if [ -z "$(echo $(get_option USERGROUPS) | grep -w wheel)" -a -n "$USERLOGIN" ]; then
-            # enable sudo for primary user USERLOGIN who is not member of wheel
-            echo "# Enable sudo for login '$USERLOGIN'" >> $TARGETDIR/etc/sudoers
-            echo "$USERLOGIN ALL=(ALL) ALL" >> $TARGETDIR/etc/sudoers
+        if [ -z "$(echo $(get_option USERGROUPS) | grep -w wheel)" ]; then
+            # enable sudo for primary user USERLOGIN
+            echo "# Enable sudo for login '$(get_option USERLOGIN)'" >> $TARGETDIR/etc/sudoers
+            echo "$(get_option USERLOGIN) ALL=(ALL) ALL" >> $TARGETDIR/etc/sudoers
         else
-            # enable the sudoers entry for members of group wheel
+            # enable sudoers entry for members of group wheel for primary user
             sed -i $TARGETDIR/etc/sudoers \
                 -e "s;#.*%wheel ALL=(ALL) ALL;%wheel ALL=(ALL) ALL;"
         fi
-        unset USERLOGIN
     fi
 
     # enable text console for grub if chosen
