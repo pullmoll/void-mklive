@@ -88,7 +88,7 @@ readonly G_GAMES="gnome-games-collection"
 readonly K_GAMES="kapman kmines"
 
 readonly BASE_PKGS="dialog chrony lvm2 cryptsetup mdadm ntfs-3g cifs-utils ddrescue mmv rsync rsyslog xtools $GRUB $EXTRA_PGKS $C_GAMES"
-readonly X_PKGS="$BASE_PKGS xorg setxkbmap xauth terminus-font dejavu-fonts-ttf alsa-plugins-pulseaudio gimp gparted inkscape libreoffice $EXTRA_X_PKGS"
+readonly X_PKGS="$BASE_PKGS xorg setxkbmap xauth terminus-font dejavu-fonts-ttf alsa-plugins-pulseaudio gparted $EXTRA_X_PKGS"
 readonly GVFS_PKGS="gvfs-afc gvfs-mtp gvfs-smb"
 
 readonly LXDE_PKGS="$X_PKGS lxdm lxde $GVFS_PKGS udisks2 $(choose_browser lxde)"
