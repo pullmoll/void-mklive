@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # vim: set ts=4 sw=4 et:
 #
@@ -30,7 +30,7 @@ trap 'error_out $? $LINENO' INT TERM 0
 umask 022
 
 readonly REQUIRED_PKGS="base-files libgcc dash coreutils sed tar gawk syslinux grub-i386-efi grub-x86_64-efi squashfs-tools xorriso"
-readonly INITRAMFS_PKGS="binutils xz device-mapper dhclient dracut-network openresolv"
+readonly INITRAMFS_PKGS="binutils xz zstd device-mapper dhclient dracut-network openresolv"
 readonly PROGNAME=$(basename "$0")
 
 info_msg() {
@@ -66,23 +66,22 @@ usage() {
 Usage: $PROGNAME [options]
 
 Options:
- -a <xbps-arch>     Set XBPS_ARCH (do not use it unless you know what it is)
- -b <system-pkg>    Set an alternative base-system package (defaults to base-system).
- -r <repo-url>      Use this XBPS repository (may be specified multiple times).
- -c <cachedir>      Use this XBPS cache directory (a subdirectory of current 
-directory if unset).
- -k <keymap>        Default keymap to use (us if unset)
- -l <locale>        Default locale to use (en_US.UTF-8 if unset).
- -i <lz4|gzip|bzip2|xz> Compression type for the initramfs image (xz if unset).
- -s <gzip|lzo|xz>     Compression type for the squashfs image (xz if unset)
- -o <file>          Output file name for the ISO image (auto if unset).
- -p "pkg pkgN ..."  Install additional packages into the ISO image.
- -I <includedir>    Include directory structure under given path into rootfs
+ -a <xbps-arch>              Set XBPS_ARCH (do not use it unless you know what it is)
+ -b <system-pkg>             Set an alternative base-system package (defaults to base-system).
+ -r <repo-url>               Use this XBPS repository (may be specified multiple times).
+ -c <cachedir>               Use this XBPS cache directory (a subdirectory of current directory if unset).
+ -k <keymap>                 Default keymap to use (us if unset)
+ -l <locale>                 Default locale to use (en_US.UTF-8 if unset).
+ -i <lz4|gzip|bzip2|xz|zstd> Compression type for the initramfs image (zstd if unset).
+ -s <gzip|lzo|xz>            Compression type for the squashfs image (xz if unset)
+ -o <file>                   Output file name for the ISO image (auto if unset).
+ -p "pkg pkgN ..."           Install additional packages into the ISO image.
+ -I <includedir>             Include directory structure under given path into rootfs
 
- -C "cmdline args"  Add additional kernel command line arguments.
- -T "title"         Modify the bootloader title.
- -v linux<version>  Install a custom Linux version on ISO image (linux meta-package if unset).
- -K                 Do not remove builddir.
+ -C "cmdline args"           Add additional kernel command line arguments.
+ -T "title"                  Modify the bootloader title.
+ -v linux<version>           Install a custom Linux version on ISO image (linux meta-package if unset).
+ -K                          Do not remove builddir.
 
 The $PROGNAME script generates a live image of the Void Linux distribution.
 This ISO image can be written to a CD/DVD-ROM or any USB stick.
@@ -262,6 +261,8 @@ generate_squashfs() {
     mount -o loop "$BUILDDIR/tmp/LiveOS/ext3fs.img" "$BUILDDIR/tmp-rootfs"
     cp -a "$ROOTFS"/* "$BUILDDIR"/tmp-rootfs/
     umount -f "$BUILDDIR/tmp-rootfs"
+    sync
+    e2fsck -f -p "$BUILDDIR/tmp/LiveOS/ext3fs.img"
     mkdir -p "$IMAGEDIR/LiveOS"
 
     "$VOIDHOSTDIR"/usr/bin/mksquashfs "$BUILDDIR/tmp" "$IMAGEDIR/LiveOS/squashfs.img" \
@@ -312,7 +313,7 @@ while getopts "a:b:r:c:C:T:Kk:l:i:I:s:S:o:p:v:h" opt; do
     esac
 done
 shift $((OPTIND - 1))
-XBPS_REPOSITORY="$XBPS_REPOSITORY --repository=http://alpha.de.repo.voidlinux.org/current --repository=http://alpha.de.repo.voidlinux.org/current/musl"
+XBPS_REPOSITORY="$XBPS_REPOSITORY --repository=/work/void/binpkgs --repository=/work/binpkgs/nonfree"
 # Configure dracut to use overlayfs for the writable overlay.
 BOOT_CMDLINE="$BOOT_CMDLINE rd.live.overlay.overlayfs=1 "
 
@@ -324,7 +325,7 @@ ARCH=$(xbps-uhelper arch)
 : ${XBPS_HOST_CACHEDIR:="$(pwd -P)"/xbps-cachedir-${ARCH}}
 : ${KEYMAP:=us}
 : ${LOCALE:=en_US.UTF-8}
-: ${INITRAMFS_COMPRESSION:=xz}
+: ${INITRAMFS_COMPRESSION:=zstd}
 : ${SQUASHFS_COMPRESSION:=xz}
 : ${BASE_SYSTEM_PKG:=base-system}
 : ${BOOT_TITLE:="Void Linux"}
@@ -353,6 +354,16 @@ ISOLINUX_CFG="$ISOLINUX_DIR/isolinux.cfg"
 CURRENT_STEP=0
 STEP_COUNT=9
 [ -n "${INCLUDE_DIRECTORY}" ] && STEP_COUNT=$((STEP_COUNT+1))
+
+echo "BASE_ARCH            : $BASE_ARCH"
+echo "BASE_CACHEDIR        : $BASE_CACHEDIR"
+echo "XBPS_HOST_CACHEDIR   : $XBPS_HOST_CACHEDIR"
+echo "KEYMAP               : $KEYMAP"
+echo "LOCALE               : $LOCALE"
+echo "INITRAMFS_COMPRESSION: $INITRAMFS_COMPRESSION"
+echo "SQUASHFS_COMPRESSION : $SQUASHFS_COMPRESSION"
+echo "BASE_SYSTEM_PKG      : $BASE_SYSTEM_PKG"
+echo "BOOT_TITLE           : $BOOT_TITLE"
 
 : ${SYSLINUX_DATADIR:="$VOIDHOSTDIR"/usr/lib/syslinux}
 : ${GRUB_DATADIR:="$VOIDHOSTDIR"/usr/share/grub}

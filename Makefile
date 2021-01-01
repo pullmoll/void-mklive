@@ -7,13 +7,11 @@ SHELL=/bin/bash
 
 T_PLATFORMS=rpi{,2,3}{,-musl} beaglebone{,-musl} cubieboard2{,-musl} odroid-c2{,-musl} GCP{,-musl}
 T_ARCHS=i686 x86_64{,-musl} armv{6,7}l{,-musl} aarch64{,-musl}
-
 T_SBC_IMGS=rpi{,2,3}{,-musl} beaglebone{,-musl} cubieboard2{,-musl} odroid-c2{,-musl}
-T_CLOUD_IMGS=GCP{,-musl}
 
 T_PXE_ARCHS=x86_64{,-musl}
 
-T_MASTERDIRS=x86_64{,-musl} i686
+T_MASTERDIRS=x86_64{,-musl} i686{,-musl}
 
 ARCHS=$(shell echo $(T_ARCHS))
 PLATFORMS=$(shell echo $(T_PLATFORMS))
@@ -22,17 +20,18 @@ CLOUD_IMGS=$(shell echo $(T_CLOUD_IMGS))
 PXE_ARCHS=$(shell echo $(T_PXE_ARCHS))
 MASTERDIRS=$(shell echo $(T_MASTERDIRS))
 
-ALL_ROOTFS=$(foreach arch,$(ARCHS),void-$(arch)-ROOTFS-$(DATECODE).tar.xz)
-ALL_PLATFORMFS=$(foreach platform,$(PLATFORMS),void-$(platform)-PLATFORMFS-$(DATECODE).tar.xz)
-ALL_SBC_IMAGES=$(foreach platform,$(SBC_IMGS),void-$(platform)-$(DATECODE).img.xz)
+ALL_ROOTFS=$(foreach arch,$(ARCHS),void-$(arch)-ROOTFS-$(DATECODE).tar.zst)
+ALL_PLATFORMFS=$(foreach platform,$(PLATFORMS),void-$(platform)-PLATFORMFS-$(DATECODE).tar.zst)
+ALL_SBC_IMAGES=$(foreach platform,$(SBC_IMGS),void-$(platform)-$(DATECODE).img.zst)
 ALL_CLOUD_IMAGES=$(foreach cloud,$(CLOUD_IMGS),void-$(cloud)-$(DATECODE).tar.gz)
 ALL_PXE_ARCHS=$(foreach arch,$(PXE_ARCHS),void-$(arch)-NETBOOT-$(DATECODE).tar.gz)
 ALL_MASTERDIRS=$(foreach arch,$(MASTERDIRS), masterdir-$(arch))
 
 SUDO := sudo
 
-XBPS_REPOSITORY := -r https://alpha.de.repo.voidlinux.org/current -r https://alpha.de.repo.voidlinux.org/current/musl -r https://alpha.de.repo.voidlinux.org/current/aarch64
-COMPRESSOR_THREADS=2
+#XBPS_REPOSITORY := -r https://alpha.de.repo.voidlinux.org/current -r https://alpha.de.repo.voidlinux.org/current/musl -r https://alpha.de.repo.voidlinux.org/current/aarch64
+XBPS_REPOSITORY := -r /work/void/binpkgs -r /work/void/binpkgs/nonfree
+COMPRESSOR_THREADS=0
 
 %.sh: %.sh.in
 	 sed -e "s|@@MKLIVE_VERSION@@|$(VERSION) $(GITVER)|g" $^ > $@
@@ -54,7 +53,7 @@ rootfs-all: $(ALL_ROOTFS)
 rootfs-all-print:
 	@echo $(ALL_ROOTFS) | sed "s: :\n:g"
 
-void-%-ROOTFS-$(DATECODE).tar.xz: $(SCRIPTS)
+void-%-ROOTFS-$(DATECODE).tar.zst: $(SCRIPTS)
 	$(SUDO) ./mkrootfs.sh $(XBPS_REPOSITORY) -x $(COMPRESSOR_THREADS) $*
 
 platformfs-all: $(ALL_PLATFORMFS)
@@ -62,8 +61,8 @@ platformfs-all: $(ALL_PLATFORMFS)
 platformfs-all-print:
 	@echo $(ALL_PLATFORMFS) | sed "s: :\n:g"
 
-void-%-PLATFORMFS-$(DATECODE).tar.xz: $(SCRIPTS)
-	$(SUDO) ./mkplatformfs.sh $(XBPS_REPOSITORY) -x $(COMPRESSOR_THREADS) $* void-$(shell ./lib.sh platform2arch $*)-ROOTFS-$(DATECODE).tar.xz
+void-%-PLATFORMFS-$(DATECODE).tar.zst: $(SCRIPTS)
+	$(SUDO) ./mkplatformfs.sh $(XBPS_REPOSITORY) -x $(COMPRESSOR_THREADS) $* void-$(shell ./lib.sh platform2arch $*)-ROOTFS-$(DATECODE).tar.zst
 
 images-all: platformfs-all images-all-sbc images-all-cloud
 
@@ -77,21 +76,21 @@ images-all-cloud: $(ALL_CLOUD_IMAGES)
 images-all-print:
 	@echo $(ALL_SBC_IMAGES) $(ALL_CLOUD_IMAGES) | sed "s: :\n:g"
 
-void-%-$(DATECODE).img.xz: void-%-PLATFORMFS-$(DATECODE).tar.xz
-	$(SUDO) ./mkimage.sh -x $(COMPRESSOR_THREADS) void-$*-PLATFORMFS-$(DATECODE).tar.xz
+void-%-$(DATECODE).img.zst: void-%-PLATFORMFS-$(DATECODE).tar.zst
+	$(SUDO) ./mkimage.sh -x $(COMPRESSOR_THREADS) void-$*-PLATFORMFS-$(DATECODE).tar.zst
 
 # Some of the images MUST be compressed with gzip rather than xz, this
 # rule services those images.
-void-%-$(DATECODE).tar.gz: void-%-PLATFORMFS-$(DATECODE).tar.xz
-	$(SUDO) ./mkimage.sh -x $(COMPRESSOR_THREADS) void-$*-PLATFORMFS-$(DATECODE).tar.xz
+void-%-$(DATECODE).tar.gz: void-%-PLATFORMFS-$(DATECODE).tar.zst
+	$(SUDO) ./mkimage.sh -x $(COMPRESSOR_THREADS) void-$*-PLATFORMFS-$(DATECODE).tar.zst
 
 pxe-all: $(ALL_PXE_ARCHS)
 
 pxe-all-print:
 	@echo $(ALL_PXE_ARCHS) | sed "s: :\n:g"
 
-void-%-NETBOOT-$(DATECODE).tar.gz: $(SCRIPTS) void-%-ROOTFS-$(DATECODE).tar.xz
-	$(SUDO) ./mknet.sh void-$*-ROOTFS-$(DATECODE).tar.xz
+void-%-NETBOOT-$(DATECODE).tar.gz: $(SCRIPTS) void-%-ROOTFS-$(DATECODE).tar.zst
+	$(SUDO) ./mknet.sh void-$*-ROOTFS-$(DATECODE).tar.zst
 
 masterdir-all-print:
 	@echo $(ALL_MASTERDIRS) | sed "s: :\n:g"

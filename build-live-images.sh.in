@@ -1,0 +1,152 @@
+#!/bin/bash
+
+ARCH=
+IMAGE=
+
+while getopts "a:b:hr:" opt; do
+case $opt in
+	a) ARCH="$OPTARG";;
+	b) IMAGE="$OPTARG";;
+	h) echo "${0#/*}: [-a arch] [-b base|e|lxde|lxqt|xfce|cinnamon|mate|gnome|kde] [-r repo]" >&2; exit 1;;
+	r) REPO="-r $OPTARG $REPO";;
+esac
+done
+shift $((OPTIND - 1))
+
+: ${ARCH:=$(uname -m)}
+
+readonly DATE=$(date +%Y%m%d)
+readonly BASE=void-live-${ARCH}-${DATE}
+readonly BASE_IMG=${BASE}.iso
+readonly E_IMG=${BASE}-enlightenment.iso
+readonly LXDE_IMG=${BASE}-lxde.iso
+readonly LXQT_IMG=${BASE}-lxqt.iso
+readonly XFCE_IMG=${BASE}-xfce.iso
+readonly CINNAMON_IMG=${BASE}-cinnamon.iso
+readonly MATE_IMG=${BASE}-mate.iso
+readonly GNOME_IMG=${BASE}-gnome.iso
+readonly KDE_IMG=${BASE}-kde.iso
+
+case "$ARCH" in
+	ppc*)	readonly GRUB="grub-powerpc-ieee1275"
+		;;
+	*)	readonly GRUB="grub-i386-efi grub-x86_64-efi"
+		;;
+esac
+
+case "$ARCH" in
+	ppc64le*)
+		readonly EXTRA_PKGS="void-docs-browse"
+		readonly EXTRA_X_PKGS=""
+		;;
+	ppc64*)
+		readonly EXTRA_PKGS="mac-fdisk hfsutils void-docs-browse"
+		readonly EXTRA_X_PKGS=""
+		;;
+	ppc*)
+		readonly EXTRA_PKGS="mac-fdisk hfsutils void-docs-browse"
+		readonly EXTRA_X_PKGS="xf86-video-r128 xf86-video-mach64"
+		;;
+	i686-musl)
+		# void-docs-browse depends on pandoc which
+		# depends on ghc which is not available for i686-musl
+		readonly EXTRA_PKGS=""
+		readonly EXTRA_X_PKGS=""
+		;;
+	*)
+		readonly EXTRA_PKGS="void-docs-browse"
+		readonly EXTRA_X_PKGS=""
+		;;
+esac
+
+choose_browser() {
+	case "$ARCH" in
+		ppc64*)
+			# all 64-bit ppc defaults to firefox-esr...
+			# no BE (or upstream in general) support in webengine
+			echo "firefox-esr"
+			;;
+		ppc*)
+			# firefox doesn't work on ppc32 right now
+			# adwaita-icon-theme is needed otherwise some icons will be missing
+			echo "epiphany adwaita-icon-theme"
+			;;
+		*)
+			# on x86, use falkon for Qt desktops
+			# else use firefox-esr which is stable on x86
+			case "$1" in
+				kde|lxqt) echo "falkon" ;;
+				*) echo "firefox-esr" ;;
+			esac
+			;;
+esac
+}
+
+readonly C_GAMES="bsd-games tmines"
+readonly X_GAMES="teeworlds xeyes"
+readonly G_GAMES="gnome-games-collection"
+readonly K_GAMES="kapman kmines"
+
+readonly BASE_PKGS="dialog chrony lvm2 cryptsetup mdadm ntfs-3g cifs-utils ddrescue mmv rsync rsyslog xtools $GRUB $EXTRA_PGKS $C_GAMES"
+readonly X_PKGS="$BASE_PKGS xorg setxkbmap xauth terminus-font dejavu-fonts-ttf alsa-plugins-pulseaudio gimp gparted inkscape libreoffice $EXTRA_X_PKGS"
+readonly GVFS_PKGS="gvfs-afc gvfs-mtp gvfs-smb"
+
+readonly LXDE_PKGS="$X_PKGS lxdm lxde $GVFS_PKGS udisks2 $(choose_browser lxde)"
+readonly LXQT_PKGS="$X_PKGS lxdm lxqt $GVFS_PKGS udisks2 $K_GAMES $(choose_browser lxqt)"
+readonly E_PKGS="$X_PKGS lxdm enlightenment terminology connman udisks2 $(choose_browser e)"
+readonly XFCE_PKGS="$X_PKGS lxdm xfce4 gnome-themes-standard gnome-keyring network-manager-applet $GVFS_PKGS udisks2 $X_GAMES $(choose_browser xfce)"
+readonly MATE_PKGS="$X_PKGS lxdm mate mate-extra gnome-keyring network-manager-applet $GVFS_PKGS udisks2 $X_GAMES $(choose_browser mate)"
+readonly CINNAMON_PKGS="$X_PKGS lxdm cinnamon gnome-keyring colord gnome-terminal $GVFS_PKGS udisks2 $X_GAMES $(choose_browser cinnamon)"
+readonly GNOME_PKGS="$X_PKGS gdm gnome-apps $X_GAMES $G_GAMES $(choose_browser gnome)"
+readonly KDE_PKGS="$X_PKGS sddm kde5 kde5-baseapps konqueror filelight k3b kcalc kget kinfocenter okular konversation kolourpaint $K_GAMES $(choose_browser kde)"
+
+if [ ! -x mklive.sh ]; then
+	echo "mklive.sh is not executable"
+	exit 0
+fi
+
+if [ -z "$IMAGE" -o "$IMAGE" = base ]; then
+	if [ ! -f $BASE_IMG ]; then
+		./mklive.sh -T "Base" -a $ARCH -o $BASE_IMG -p "$BASE_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = e ]; then
+	if [ ! -f $E_IMG ]; then
+		./mklive.sh -T "Enlightenment" -a $ARCH -o $E_IMG -p "$E_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = lxde ]; then
+	if [ ! -f $LXDE_IMG ]; then
+		./mklive.sh -T "LxDE" -a $ARCH -o $LXDE_IMG -p "$LXDE_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = lxqt ]; then
+	if [ ! -f $LXQT_IMG ]; then
+		./mklive.sh -T "LxQt" -a $ARCH -o $LXQT_IMG -p "$LXQT_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = xfce ]; then
+	if [ ! -f $XFCE_IMG ]; then
+		./mklive.sh -T "Xfce4" -a $ARCH -o $XFCE_IMG -p "$XFCE_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = cinnamon ]; then
+	if [ ! -f $CINNAMON_IMG ]; then
+		./mklive.sh -T "Cinnamon" -a $ARCH -o $CINNAMON_IMG -p "$CINNAMON_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = mate ]; then
+	if [ ! -f $MATE_IMG ]; then
+		./mklive.sh -T "Mate" -a $ARCH -o $MATE_IMG -p "$MATE_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = gnome ]; then
+	if [ ! -f $GNOME_IMG ]; then
+		./mklive.sh -T "Gnome" -a $ARCH -o $GNOME_IMG -p "$GNOME_PKGS" ${REPO} $@
+	fi
+fi
+if [ -z "$IMAGE" -o "$IMAGE" = kde ]; then
+	if [ ! -f $KDE_IMG ]; then
+		./mklive.sh -T "KDE5" -a $ARCH -o $KDE_IMG -p "$KDE_PKGS" ${REPO} $@
+	fi
+fi

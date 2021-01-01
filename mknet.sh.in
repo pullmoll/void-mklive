@@ -55,18 +55,18 @@ usage() {
 Usage: $PROGNAME [options] <rootfs>
 
 Options:
- -r <repo-url>      Use this XBPS repository (may be specified multiple times).
- -c <cachedir>      Use this XBPS cache directory.
- -i <lz4|gzip|bzip2|xz> Compression type for the initramfs image (xz if unset).
- -o <file>          Output file name for the netboot tarball (auto if unset).
- -K <kernelpkg>     Use <kernelpkg> instead of 'linux' to build the image.
+ -r <repo-url>                Use this XBPS repository (may be specified multiple times).
+ -c <cachedir>                Use this XBPS cache directory.
+ -i <lz4|gzip|bzip2|xz|zstd>  Compression type for the initramfs image (zstd if unset).
+ -o <file>                    Output file name for the netboot tarball (auto if unset).
+ -K <kernelpkg>               Use <kernelpkg> instead of 'linux' to build the image.
 
- -k <keymap>        Console keymap to set (us if unset)
- -l <locale>        Locale to set (en_US.UTF-8 if unset)
+ -k <keymap>                  Console keymap to set (us if unset)
+ -l <locale>                  Locale to set (en_US.UTF-8 if unset)
 
- -C "cmdline args"  Add additional kernel command line arguments.
- -T "title"         Modify the bootloader title.
- -S "splash image"  Set a custom splash image for the bootloader
+ -C "cmdline args"            Add additional kernel command line arguments.
+ -T "title"                   Modify the bootloader title.
+ -S "splash image"            Set a custom splash image for the bootloader
 
 The $PROGNAME script generates a network-bootable tarball of Void Linux
 _EOF
@@ -170,7 +170,7 @@ else
     info_msg "Selecting u-boot bootloader"
     bootloader_pkg=uboot-mkimage
 fi
-run_cmd_target "xbps-install $XBPS_CONFFILE $XBPS_CACHEDIR $XBPS_REPOSITORY -r $ROOTFS -Sy ${KERNELPKG-linux} dracut binutils dracut-network dialog ${INITRAMFS_COMPRESSION-xz} ${bootloader_pkg}"
+run_cmd_target "xbps-install $XBPS_CONFFILE $XBPS_CACHEDIR $XBPS_REPOSITORY -r $ROOTFS -Sy ${KERNELPKG-linux} dracut binutils dracut-network dialog ${INITRAMFS_COMPRESSION-zstd} ${bootloader_pkg}"
 run_cmd_chroot "$ROOTFS" "xbps-reconfigure -a"
 
 # Dracut needs to know the kernel version that will be using this
@@ -187,7 +187,7 @@ KERNELVERSION=$(ls "$ROOTFS/usr/lib/modules/")
 info_msg "Building initrd for kernel version $KERNELVERSION"
 run_cmd_chroot "$ROOTFS" "env -i /usr/bin/dracut \
                -N \
-               --${INITRAMFS_COMPRESSION-xz} \
+               --${INITRAMFS_COMPRESSION-zstd} \
                --add-drivers ahci \
                --force-add 'autoinstaller netmenu' \
                --omit systemd \
