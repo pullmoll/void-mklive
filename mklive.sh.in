@@ -262,6 +262,8 @@ generate_squashfs() {
     mount -o loop "$BUILDDIR/tmp/LiveOS/ext3fs.img" "$BUILDDIR/tmp-rootfs"
     cp -a "$ROOTFS"/* "$BUILDDIR"/tmp-rootfs/
     umount -f "$BUILDDIR/tmp-rootfs"
+    sync
+    e2fsck -y -f "$BUILDDIR/tmp/LiveOS/ext3fs.img"
     mkdir -p "$IMAGEDIR/LiveOS"
 
     "$VOIDHOSTDIR"/usr/bin/mksquashfs "$BUILDDIR/tmp" "$IMAGEDIR/LiveOS/squashfs.img" \
@@ -312,7 +314,7 @@ while getopts "a:b:r:c:C:T:Kk:l:i:I:s:S:o:p:v:h" opt; do
     esac
 done
 shift $((OPTIND - 1))
-XBPS_REPOSITORY="$XBPS_REPOSITORY --repository=http://alpha.de.repo.voidlinux.org/current --repository=http://alpha.de.repo.voidlinux.org/current/musl"
+XBPS_REPOSITORY="$XBPS_REPOSITORY --repository=/work/void/binpkgs --repository=/work/void/binpkgs/nonfree"
 # Configure dracut to use overlayfs for the writable overlay.
 BOOT_CMDLINE="$BOOT_CMDLINE rd.live.overlay.overlayfs=1 "
 

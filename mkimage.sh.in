@@ -370,7 +370,7 @@ case "$PLATFORM" in
         ;;
     *)
         info_msg "Compressing $FILENAME with xz (level 9 compression)"
-        xz "-T${COMPRESSOR_THREADS:-0}" -9 "$FILENAME"
+        xz "-T${COMPRESSOR_THREADS:-0}" -9 -v "$FILENAME"
         info_msg "Successfully created $FILENAME image."
         ;;
 esac

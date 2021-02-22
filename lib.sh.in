@@ -197,6 +197,14 @@ register_binfmt() {
             _magic="\x7fELF\x02\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x15"
             _mask="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff"
             ;;
+        ppcle)
+            if [ "$_hostarch" = "ppc64le" ] ; then
+                return
+            fi
+            _cpu=ppc
+            _magic="\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x14\x00"
+            _mask="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff"
+            ;;
         ppc)
             if [ "$_hostarch" = "ppc64" ] ; then
                 return
@@ -205,13 +213,21 @@ register_binfmt() {
             _magic="\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x14"
             _mask="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff"
             ;;
-        mipsel)
+        mipsel*)
             if [ "$_hostarch" = "mips64el" ] ; then
                 return
             fi
             _cpu=mipsel
             _magic="\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08\x00"
             _mask="\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff"
+            ;;
+        mips*)
+            if [ "$_hostarch" = "mips64" ] ; then
+                return
+            fi
+            _cpu=mips
+            _magic='\x7fELF\x01\x02\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x08'
+            _mask='\xff\xff\xff\xff\xff\xff\xff\x00\xfe\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff'
             ;;
         x86_64)
             _cpu=x86_64
@@ -294,10 +310,8 @@ set_cachedir() {
 
 # These should all resolve even if they won't have the appropriate
 # repodata files for the selected architecture.
-: "${XBPS_REPOSITORY:=--repository=http://alpha.de.repo.voidlinux.org/current \
-                      --repository=http://alpha.de.repo.voidlinux.org/current/musl \
-                      --repository=http://alpha.de.repo.voidlinux.org/current/aarch64}"
-
+: "${XBPS_REPOSITORY:=--repository=/work/void/binpkgs \
+                      --repository=/work/void/binpkgs/nonfree}"
 
 
 # This library is the authoritative source of the platform map,

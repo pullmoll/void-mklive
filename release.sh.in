@@ -1,32 +1,24 @@
 #!/bin/bash
 
-REPOSITORY="/hostdir/binpkgs /hostdir/binpkgs/musl /hostdir/binpkgs/aarch64"
+REPOSITORY="/hostdir/binpkgs /hostdir/binpkgs/nonfree"
 DATECODE=$(date "+%Y%m%d")
 
 make
 
-ARCHS="$(echo x86_64{,-musl} armv{6,7}l{,-musl} aarch64{,-musl})"
-PLATFORMS="$(echo rpi{,2,3}{,-musl} beaglebone{,-musl} cubieboard2{,-musl} odroid-c2{,-musl})"
-SBC_IMGS="$(echo rpi{,2,3}{,-musl} beaglebone{,-musl} cubieboard2{,-musl} odroid-c2{,-musl})"
+ARCHS="$(echo x86_64{,-musl} i686{,-musl} aarch64{,-musl} armv{5tel,6l,7l}{,-musl} ppc64{,le}{,-musl} ppc{,-musl} mips{,el,hf,elhf}-musl)"
+PLATFORMS="$(echo rpi{,2,3}{,-musl} pinebookpro{,-musl})"
+SBC_IMGS="$(echo rpi{,2,3}{,-musl} pinebookpro{,-musl})"
 
 make rootfs-all ARCHS="$ARCHS" REPOSITORY="$REPOSITORY" DATECODE="$DATECODE"
 make platformfs-all PLATFORMS="$PLATFORMS" REPOSITORY="$REPOSITORY" DATECODE="$DATECODE"
 make images-all-sbc SBC_IMGS="$SBC_IMGS" REPOSITORY="$REPOSITORY" DATECODE="$DATECODE"
 make pxe-all REPOSITORY="$REPOSITORY"
 
-MKLIVE_REPO=(-r /hostdir/binpkgs -r /hostdir/binpkgs/nonfree -r /hostdir/musl -r /hostdir/binpkgs/musl/nonfree)
-./build-x86-images.sh -a i686 -b base "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a i686 -b xfce "${MKLIVE_REPO[@]}"
-
-./build-x86-images.sh -a x86_64 -b base "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a x86_64 -b xfce "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a x86_64 -b cinnamon "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a x86_64 -b lxde "${MKLIVE_REPO[@]}"
-
-./build-x86-images.sh -a x86_64-musl -b base "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a x86_64-musl -b xfce "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a x86_64-musl -b cinnamon "${MKLIVE_REPO[@]}"
-./build-x86-images.sh -a x86_64-musl -b lxde "${MKLIVE_REPO[@]}"
+MKLIVE_REPO=(-r /hostdir/binpkgs -r /hostdir/binpkgs/nonfree)
+./build-live-images.sh -a i686 "${MKLIVE_REPO[@]}"
+./build-live-images.sh -a x86_64 "${MKLIVE_REPO[@]}"
+./build-live-images.sh -a i686-musl "${MKLIVE_REPO[@]}"
+./build-live-images.sh -a x86_64-musl "${MKLIVE_REPO[@]}"
 
 mkdir "$DATECODE"
 mv "*${DATECODE}*.xz" "$DATECODE/"

@@ -814,8 +814,8 @@ set_bootloader() {
 }
 
 test_network() {
-    rm -f xtraeme.asc && \
-        xbps-uhelper fetch http://alpha.de.repo.voidlinux.org/live/xtraeme.asc >$LOG 2>&1
+    rm -f pullmoll.asc && \
+        xbps-uhelper fetch http://repo.voidlinux.de/live/pullmoll.asc >$LOG 2>&1
     if [ $? -eq 0 ]; then
         DIALOG --msgbox "Network is working properly!" ${MSGBOXSIZE}
         NETWORK_DONE=1
@@ -1327,6 +1327,9 @@ ${BOLD}Do you want to continue?${RESET}" 20 80 || return
 
     # clean up polkit rule - it's only useful in live systems
     rm -f $TARGETDIR/etc/polkit-1/rules.d/void-live.rules
+
+    # remove xorg.conf which was specific for the live system
+    rm -f $TARGETDIR/etc/X11/xorg.conf
 
     # enable text console for grub if chosen
     if [ "$(get_option TEXTCONSOLE)" = "1" ]; then

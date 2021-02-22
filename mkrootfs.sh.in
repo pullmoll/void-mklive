@@ -52,9 +52,8 @@ Usage: $PROGNAME [options] <arch>
 Supported architectures: i686, i686-musl, x86_64, x86_64-musl,
                          armv5tel, armv5tel-musl, armv6l, armv6l-musl, armv7l, armv7l-musl
                          aarch64, aarch64-musl,
-                         mipsel, mipsel-musl
-                         ppc, ppc-musl
-                         ppc64le, ppc64le-musl, ppc64, ppc64-musl
+                         mips-musl, mipsel-musl, mipshf-musl, mipselhf-musl,
+                         ppc, ppc-musl, ppc64le, ppc64le-musl, ppc64, ppc64-musl
 
 
 Options

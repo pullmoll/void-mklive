@@ -6,14 +6,13 @@ DATECODE=$(shell date "+%Y%m%d")
 SHELL=/bin/bash
 
 T_PLATFORMS=rpi{,2,3}{,-musl} beaglebone{,-musl} cubieboard2{,-musl} odroid-c2{,-musl} GCP{,-musl}
-T_ARCHS=i686 x86_64{,-musl} armv{6,7}l{,-musl} aarch64{,-musl}
+T_ARCHS=i686 x86_64{,-musl} armv5tel{,-musl} armv{6,7}l{,-musl} aarch64{,-musl} mips{,el,hf,elhf}-musl
 
 T_SBC_IMGS=rpi{,2,3}{,-musl} beaglebone{,-musl} cubieboard2{,-musl} odroid-c2{,-musl}
 T_CLOUD_IMGS=GCP{,-musl}
 
-T_PXE_ARCHS=x86_64{,-musl}
-
-T_MASTERDIRS=x86_64{,-musl} i686
+T_PXE_ARCHS=x86_64{,-musl} i686{,-musl}
+T_MASTERDIRS=x86_64{,-musl} i686{,-musl}
 
 ARCHS=$(shell echo $(T_ARCHS))
 PLATFORMS=$(shell echo $(T_PLATFORMS))
@@ -31,8 +30,8 @@ ALL_MASTERDIRS=$(foreach arch,$(MASTERDIRS), masterdir-$(arch))
 
 SUDO := sudo
 
-XBPS_REPOSITORY := -r https://alpha.de.repo.voidlinux.org/current -r https://alpha.de.repo.voidlinux.org/current/musl -r https://alpha.de.repo.voidlinux.org/current/aarch64
-COMPRESSOR_THREADS=2
+XBPS_REPOSITORY := -r /work/void/binpkgs -r /work/void/binpkgs/nonfree
+COMPRESSOR_THREADS=96
 
 %.sh: %.sh.in
 	 sed -e "s|@@MKLIVE_VERSION@@|$(VERSION) $(GITVER)|g" $^ > $@

@@ -1,0 +1,17 @@
+#!/bin/bash
+archs="x86_64 i686 x86_64-musl i686-musl"
+imgs="base e lxde lxqt xfce cinnamon mate gnome kde"
+
+die() { echo "Aborted by user..."; exit 1; }
+
+trap 'die' INT TERM
+
+for img in ${imgs}; do
+	for arch in ${archs}; do
+		bash build-live-images.sh \
+			-r /work/void/binpkgs \
+			-r /work/void/binpkgs/nonfree \
+			-a ${arch} \
+			-b ${img}
+	done
+done
